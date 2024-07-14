@@ -5,12 +5,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.instagramstories.databinding.PulseItemLayoutBinding
-import com.example.instagramstories.remote.model.VideoDataModel
+import com.example.instagramstories.remote.model.DataModel
 import com.squareup.picasso.Picasso
 
 
-class PulseAdapter(private val videoList: List<VideoDataModel>) :
-    RecyclerView.Adapter<PulseAdapter.ImageViewHolder>() {
+class StoryAdapter(
+    private val videoList: List<DataModel>,
+    private val onClick: (pos: Int) -> Unit
+) :
+    RecyclerView.Adapter<StoryAdapter.ImageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -20,7 +23,7 @@ class PulseAdapter(private val videoList: List<VideoDataModel>) :
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val image = videoList[position]
-        holder.bind(image)
+        holder.bind(image, position)
     }
 
     override fun getItemCount(): Int {
@@ -31,11 +34,15 @@ class PulseAdapter(private val videoList: List<VideoDataModel>) :
 
     inner class ImageViewHolder(private val binding: PulseItemLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(image: VideoDataModel) {
+        fun bind(image: DataModel, position: Int) {
 
             binding.apply {
 
                 Picasso.get().load(image.image_url).into(pulseUserPic)
+
+                pulsePicLayout.setOnClickListener {
+                    onClick(position)
+                }
 
             }
 

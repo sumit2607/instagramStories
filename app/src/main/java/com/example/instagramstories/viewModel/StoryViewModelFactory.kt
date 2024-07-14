@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.instagramstories.repo.StoryRepository
 
-class VideoViewModelFactory(private val videoRepo: StoryRepository) : ViewModelProvider.Factory {
+class StoryViewModelFactory(private val videoRepo: StoryRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return VideoViewModel(videoRepo) as T
+        return StoryViewModel(videoRepo) as T
     }
 
 }
