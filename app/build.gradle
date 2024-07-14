@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
+    id 'kotlin-kapt' // Use this to enable KAPT
+
 }
 
 android {
@@ -62,5 +64,11 @@ dependencies {
     //for splash screen animation lottie animation
     implementation("com.airbnb.android:lottie:3.4.0")
     implementation 'com.github.bumptech.glide:glide:4.12.0'
+
+    // Room components
+    def room_version = "2.5.0"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
 
 }

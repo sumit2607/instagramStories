@@ -17,68 +17,67 @@ import com.example.instagramstories.remote.api.RetrofitClient
 import com.example.instagramstories.remote.api.StoryApi
 import com.example.instagramstories.remote.model.DataModel
 import com.example.instagramstories.remote.model.SharedViewModel
+import com.example.instagramstories.remote.roomdb.StoryDatabase
 import com.example.instagramstories.repo.StoryRepository
 import com.example.instagramstories.ui.adapter.StoryAdapter
 import com.example.instagramstories.viewModel.StoryViewModel
 import com.example.instagramstories.viewModel.StoryViewModelFactory
 
 
-class StoryListFragment() : Fragment() {
-    private lateinit var storyViewModel: StoryViewModel
-    private var _binding: FragmentStoryListBinding? = null
+class StoryListFragment : Fragment() {
 
+    private lateinit var storyViewModel: StoryViewModel
     private lateinit var storyAdapter: StoryAdapter
-    private lateinit var dataModel: DataModel
+    private lateinit var binding: FragmentStoryListBinding
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
-    private val binding get() = _binding!!
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentStoryListBinding.inflate(inflater, container, false)
+    ): View? {
+        binding = FragmentStoryListBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupRecyclerview()
-    }
 
-    private fun setupRecyclerview() {
-        val apiInterface = RetrofitClient.getInstance().create(StoryApi::class.java)
+        val application = requireNotNull(this.activity).application
+        val storyDao = StoryDatabase.getDatabase(application).storyDao()
+        val storyApiService = RetrofitClient.getInstance().create(StoryApi::class.java)
+        val repository = StoryRepository(storyDao, storyApiService)
+        storyViewModel = ViewModelProvider(this, StoryViewModelFactory(repository)).get(StoryViewModel::class.java)
 
-        val storyRepository = StoryRepository(apiInterface)
+        storyViewModel.storyData.observe(viewLifecycleOwner) { storyList ->
+            Log.d("TAG", "onCreate: ${storyList[0].video_url}")
+            Log.d("TAG", "onCreate: ${storyList[0].storydata?.get(0)}")
 
-        storyViewModel =
-            ViewModelProvider(
-                this,
-                StoryViewModelFactory(storyRepository)
-            )[StoryViewModel::class.java]
-        storyViewModel.storyData.observe(viewLifecycleOwner) {
-            Log.d("TAG", "onCreate: ${it[0].video_url}")
-            Log.d("TAG", "onCreatdssde: ${it[0].storydata?.get(0)}")
-
-            storyAdapter = StoryAdapter(it as List<DataModel>) { pos ->
-                Log.d("TAG", "setupRecyclerview: " + "$pos")
-                // Example of setting story list in ViewModel
-                val storyList = it[pos].storydata
-                if (storyList != null) {
-                    Log.d("TAG", "setupRecyclerview: " + "$storyList")
-                    sharedViewModel.setStoryList(storyList) // Set story list to SharedViewModel
+            storyAdapter = StoryAdapter(storyList as List<DataModel>) { pos ->
+                Log.d("TAG", "setupRecyclerview: $pos")
+                val storyData = storyList[pos].storydata
+                if (storyData != null) {
+                    Log.d("TAG", "setupRecyclerview: $storyData")
+                    sharedViewModel.setStoryList(storyData) // Set story list to SharedViewModel
                 }
                 val storyViewFragment = StoryViewFragment()
-                fragmentManager?.let { it1 -> storyViewFragment.show(it1, "frome") }
-
+                fragmentManager?.let { storyViewFragment.show(it, "frome") }
             }
+
             binding.pulseRecyclerview.layoutManager =
                 LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             binding.pulseRecyclerview.adapter = storyAdapter
-
         }
+
+        storyViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            // Show or hide loading indicator
+        }
+
+        storyViewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            // Show error message
+        }
+
+        // Fetch stories from API when fragment is created
+        storyViewModel.fetchStories()
     }
 }
+

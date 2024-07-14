@@ -27,7 +27,7 @@ class StoryViewFragment : DialogFragment() {
 
     private var currentImageIndex = 0
     private val handler: Handler = Handler(Looper.getMainLooper())
-    private val storyDuration = 5000L // Duration for each image
+    private val storyDuration = 10000L // Duration for each image
 
     // Use SharedViewModel instead of StoryViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
@@ -61,7 +61,7 @@ class StoryViewFragment : DialogFragment() {
 
         // Observe story data from SharedViewModel
         sharedViewModel.storyList.observe(viewLifecycleOwner) { storyList ->
-            Log.d("TAG", "onViewCreated: line no 65 " + storyList)
+            Log.d("TAG", "onViewCreated: line no 65 $storyList")
             storyList?.let {
                 binding.viewPager.adapter = ImagePagerAdapter(it) { position, isForwardClick ->
                     if (isForwardClick) {
@@ -160,6 +160,7 @@ class StoryViewFragment : DialogFragment() {
         _binding = null
     }
 }
+
 
 
 

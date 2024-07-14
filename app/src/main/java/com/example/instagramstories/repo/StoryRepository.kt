@@ -1,20 +1,44 @@
 package com.example.instagramstories.repo
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.instagramstories.remote.api.StoryApi
 import com.example.instagramstories.remote.model.DataModel
+import com.example.instagramstories.remote.roomdb.StoryDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class StoryRepository(private val apiService: StoryApi) {
-    private val videoLiveData = MutableLiveData<List<DataModel>>()
-    val video: LiveData<List<DataModel>>
-        get() = videoLiveData
+class StoryRepository(
+    private val storyDao: StoryDao,
+    private val storyApiService: StoryApi // Assume you have an API service class
+) {
 
-    fun getMemes() {
-        val result = apiService.getItems()
-        if (result != null) {
-            videoLiveData.postValue(result.execute().body())
+    val allStories: LiveData<List<DataModel>> = storyDao.getAllStories()
+
+    // Fetch stories from API and save to database
+    suspend fun fetchAndSaveStories() {
+        withContext(Dispatchers.IO) {
+            try {
+                val response = storyApiService.getItems()// API call
+                if (response.isExecuted) {
+                    response.execute().body()?.let { stories ->
+                        storyDao.deleteAll() // Clear the old data
+                        storyDao.insert(stories) // Insert new data
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
+                e.printStackTrace()
+            }
         }
     }
-}
 
+    // Insert a single story
+    suspend fun insert(story: List<DataModel>) {
+        storyDao.insert(story)
+    }
+
+    // Delete all stories
+    suspend fun deleteAll() {
+        storyDao.deleteAll()
+    }
+}
