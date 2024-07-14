@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,14 +14,11 @@ import android.view.Window
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.example.instagramstories.databinding.FragmentStoryViewBinding
-import com.example.instagramstories.remote.api.RetrofitClient
-import com.example.instagramstories.remote.api.StoryApi
-import com.example.instagramstories.repo.StoryRepository
+import com.example.instagramstories.remote.model.SharedViewModel
 import com.example.instagramstories.ui.adapter.ImagePagerAdapter
-import com.example.instagramstories.viewModel.StoryViewModel
-import com.example.instagramstories.viewModel.StoryViewModelFactory
+
 
 class StoryViewFragment : DialogFragment() {
 
@@ -31,7 +29,8 @@ class StoryViewFragment : DialogFragment() {
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val storyDuration = 5000L // Duration for each image
 
-    private lateinit var storyViewModel: StoryViewModel
+    // Use SharedViewModel instead of StoryViewModel
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -60,16 +59,9 @@ class StoryViewFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel
-        val apiInterface = RetrofitClient.getInstance().create(StoryApi::class.java)
-        val storyRepository = StoryRepository(apiInterface)
-        storyViewModel = ViewModelProvider(
-            this,
-            StoryViewModelFactory(storyRepository)
-        ).get(StoryViewModel::class.java)
-
-        // Observe story data
-        storyViewModel.storyData.observe(viewLifecycleOwner) { storyList ->
+        // Observe story data from SharedViewModel
+        sharedViewModel.storyList.observe(viewLifecycleOwner) { storyList ->
+            Log.d("TAG", "onViewCreated: line no 65 " + storyList)
             storyList?.let {
                 binding.viewPager.adapter = ImagePagerAdapter(it) { position, isForwardClick ->
                     if (isForwardClick) {
@@ -87,6 +79,8 @@ class StoryViewFragment : DialogFragment() {
                 setupProgressBars(it.size)
                 updateViewPager()
                 startAutoAdvance()
+            } ?: run {
+                Log.d("TAG", "No data available in StoryViewFragment")
             }
         }
 
@@ -166,6 +160,8 @@ class StoryViewFragment : DialogFragment() {
         _binding = null
     }
 }
+
+
 
 
 

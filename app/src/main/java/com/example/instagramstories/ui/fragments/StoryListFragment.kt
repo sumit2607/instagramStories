@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +29,7 @@ class StoryListFragment() : Fragment() {
 
     private lateinit var storyAdapter: StoryAdapter
     private lateinit var dataModel: DataModel
-    private val sharedViewModel: SharedViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     private val binding get() = _binding!!
     override fun onCreateView(
@@ -60,11 +61,16 @@ class StoryListFragment() : Fragment() {
             )[StoryViewModel::class.java]
         storyViewModel.storyData.observe(viewLifecycleOwner) {
             Log.d("TAG", "onCreate: ${it[0].video_url}")
-            storyAdapter = StoryAdapter(it) { pos ->
+            Log.d("TAG", "onCreatdssde: ${it[0].storydata?.get(0)}")
+
+            storyAdapter = StoryAdapter(it as List<DataModel>) { pos ->
                 Log.d("TAG", "setupRecyclerview: " + "$pos")
                 // Example of setting story list in ViewModel
-                val storyList = listOf<DataModel>(/* Your data here */)
-                sharedViewModel.setStoryList(storyList)
+                val storyList = it[pos].storydata
+                if (storyList != null) {
+                    Log.d("TAG", "setupRecyclerview: " + "$storyList")
+                    sharedViewModel.setStoryList(storyList) // Set story list to SharedViewModel
+                }
                 val storyViewFragment = StoryViewFragment()
                 fragmentManager?.let { it1 -> storyViewFragment.show(it1, "frome") }
 

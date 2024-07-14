@@ -10,7 +10,7 @@ class StoryRepository(private val apiService: StoryApi) {
     val video: LiveData<List<DataModel>>
         get() = videoLiveData
 
-    suspend fun getMemes() {
+    fun getMemes() {
         val result = apiService.getItems()
         if (result != null) {
             videoLiveData.postValue(result.execute().body())
