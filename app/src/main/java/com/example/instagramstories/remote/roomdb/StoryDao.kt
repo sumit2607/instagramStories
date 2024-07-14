@@ -14,6 +14,4 @@ interface StoryDao {
     @Insert
     suspend fun insert(story: List<DataModel>)
 
-    @Query("DELETE FROM story_table")
-    suspend fun deleteAll()
 }
