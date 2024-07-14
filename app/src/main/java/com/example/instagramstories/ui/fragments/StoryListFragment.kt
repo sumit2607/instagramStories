@@ -1,45 +1,80 @@
 package com.example.instagramstories.ui.fragments
 
+import android.content.Context
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.instagramstories.databinding.FragmentStoryListBinding
+import com.example.instagramstories.remote.api.RetrofitClient
+import com.example.instagramstories.remote.api.StoryApi
+import com.example.instagramstories.repo.StoryRepository
+import com.example.instagramstories.ui.adapter.PulseAdapter
+import com.example.instagramstories.viewModel.VideoViewModel
+import com.example.instagramstories.viewModel.VideoViewModelFactory
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [StoryListFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-//class StoryListFragment : Fragment() {
-//    private lateinit var viewModel: VideoViewModel
-//    private lateinit var adapter: PulseAdapter
-//    private lateinit var binding: FragmentStoryListBinding
+class StoryListFragment() : Fragment() {
+    private lateinit var videoViewModel: VideoViewModel
+    private var _binding: FragmentStoryListBinding? = null
+
+    private lateinit var pulseAdapter: PulseAdapter
+
+    private val binding get() = _binding!!
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentStoryListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupRecyclerview()
+
+//        val apiinterface = RetrofitClient.getInstance().create(StoryApi::class.java)
 //
-//    override fun onCreateView(
-//        inflater: LayoutInflater, container: ViewGroup?,
-//        savedInstanceState: Bundle?
-//    ): View? {
-//        return inflater.inflate(R.layout.fragment_story_list, container, false)
-//    }
+//        val videoRepo = StoryRepository(apiinterface)
 //
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        viewModel = ViewModelProvider(this).get(VideoViewModel::class.java)
-////        adapter = StoryAdapter { story ->
-////            val action = StoryListFragmentDirections.actionStoryListFragmentToStoryViewFragment(story)
-////            findNavController().navigate(action)
-////        }
-//
-//        val recyclerView = view.findViewById<RecyclerView>(R.id.storyRecyclerView)
-//        recyclerView.adapter = adapter
-//        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-//
-//        viewModel.stories.observe(viewLifecycleOwner) { stories ->
-//            adapter.submitList(stories)
+//        videoViewModel =
+//            ViewModelProvider(this, VideoViewModelFactory(videoRepo))[VideoViewModel::class.java]
+//        videoViewModel.video.observe(viewLifecycleOwner) {
+//            Log.d("TAG", "onCreate: ${it.get(0).video_url}")
+//           // adapter = VideoAdapter(it)
+//            val snapHelper = PagerSnapHelper()
+//            snapHelper.attachToRecyclerView(binding.recyclerView)
+//            binding.recyclerView.layoutManager =
+//                LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+//            //binding.recyclerView.adapter = adapter
+////
 //        }
-//
-//        viewModel.fetchStories()
-//    }
-//}
+
+    }
+
+    private fun setupRecyclerview() {
+        val apiinterface = RetrofitClient.getInstance().create(StoryApi::class.java)
+
+        val videoRepo = StoryRepository(apiinterface)
+
+        videoViewModel =
+            ViewModelProvider(this, VideoViewModelFactory(videoRepo))[VideoViewModel::class.java]
+        videoViewModel.video.observe(viewLifecycleOwner) {
+            Log.d("TAG", "onCreate: ${it.get(0).video_url}")
+            pulseAdapter = PulseAdapter(it)
+            binding.pulseRecyclerview.layoutManager =
+                LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            binding.pulseRecyclerview.adapter = pulseAdapter
+
+        }
+    }
+}
