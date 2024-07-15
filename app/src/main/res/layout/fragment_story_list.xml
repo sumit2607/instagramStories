@@ -16,7 +16,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pulseRecyclerview"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_70sdp"
+        android:layout_height="@dimen/_90sdp"
         android:layout_below="@+id/nameTv" />
 
 </RelativeLayout>

@@ -38,6 +38,8 @@ class StoryAdapter(
 
             binding.apply {
 
+                testUserName.text = image.user_name
+
                 Picasso.get().load(image.image_url).into(pulseUserPic)
 
                 pulsePicLayout.setOnClickListener {

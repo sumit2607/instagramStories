@@ -61,7 +61,7 @@ class StoryViewFragment : DialogFragment() {
 
         // Observe story data from SharedViewModel
         sharedViewModel.storyList.observe(viewLifecycleOwner) { storyList ->
-            Log.d("TAG", "onViewCreated: line no 65 " + storyList)
+            Log.d("TAG", "onViewCreated: line no 65 " + storyList[2].story_photo)
             storyList?.let {
                 binding.viewPager.adapter = ImagePagerAdapter(it) { position, isForwardClick ->
                     if (isForwardClick) {
