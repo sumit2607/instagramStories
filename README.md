@@ -6,7 +6,7 @@ Welcome to **My Insta Stories App**! This repository hosts the source code for a
 ###  
 App Name                   | Describe                  | Tech Stack             | Google Play 
 :------------------------: | :------------------------ | :------------------------: | :------------------------: 
-Insta Stories | Insta Stories is an application where one can share and watch short videos, make friends globally. | Android, Kotlin, Firebase, Glide,, Material UI, Navigation Component | [![Get it on Google Play](https://firebasestorage.googleapis.com/v0/b/snapchat-f2264.appspot.com/o/T9HnFlW.png?alt=media&token=b46055e4-3b02-424f-9e88-862543831a8b)](https://play.google.com/store/apps/details?id=com.angel.snapchat)
+Insta Stories | Insta Stories is an application where one can  watch , make friends globally. | Android, Kotlin, Firebase, Glide,, Material UI, Navigation Component | [![Get it on Google Play](https://firebasestorage.googleapis.com/v0/b/snapchat-f2264.appspot.com/o/T9HnFlW.png?alt=media&token=b46055e4-3b02-424f-9e88-862543831a8b)](https://play.google.com/store/apps/details?id=com.angel.snapchat)
 
 ## Features
 
