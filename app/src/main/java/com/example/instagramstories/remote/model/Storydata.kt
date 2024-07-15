@@ -2,11 +2,13 @@ package com.example.instagramstories.remote.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
+
+
 data class Storydata(
+    @SerializedName("story_photo")
     val story_photo: String
-):Parcelable
+): Serializable
