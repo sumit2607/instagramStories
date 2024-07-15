@@ -17,7 +17,6 @@ import com.example.instagramstories.remote.api.RetrofitClient
 import com.example.instagramstories.remote.api.StoryApi
 import com.example.instagramstories.remote.model.DataModel
 import com.example.instagramstories.remote.model.SharedViewModel
-import com.example.instagramstories.remote.roomdb.StoryDatabase
 import com.example.instagramstories.repo.StoryRepository
 import com.example.instagramstories.ui.adapter.StoryAdapter
 import com.example.instagramstories.viewModel.StoryViewModel

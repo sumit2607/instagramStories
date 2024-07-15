@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class StoryViewModel(private val repository: StoryRepository) : ViewModel() {
 
-    val storyData: LiveData<List<DataModel>> = repository.allStories
+    val storyData: List<DataModel>? = repository.allStories
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
@@ -40,11 +40,11 @@ class StoryViewModel(private val repository: StoryRepository) : ViewModel() {
 //    }
 
     // Delete all stories
-    fun deleteAll() {
-        viewModelScope.launch {
-            repository.deleteAll()
-        }
-    }
+//    fun deleteAll() {
+//        viewModelScope.launch {
+//            repository.deleteAll()
+//        }
+//    }
 }
 
 
