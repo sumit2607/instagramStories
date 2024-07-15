@@ -3,6 +3,7 @@ package com.example.instagramstories.repo
 import androidx.lifecycle.LiveData
 import com.example.instagramstories.remote.api.StoryApi
 import com.example.instagramstories.remote.model.DataModel
+import com.example.instagramstories.remote.model.Storydata
 import com.example.instagramstories.remote.roomdb.StoryDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,8 +22,11 @@ class StoryRepository(
                 val response = storyApiService.getItems()// API call
                 if (response.isExecuted) {
                     response.execute().body()?.let { stories ->
-                        storyDao.deleteAll() // Clear the old data
-                        storyDao.insert(stories) // Insert new data
+                        //  storyDao.deleteAll() // Clear the old data
+                        for (i in stories.listIterator()) {
+                            storyDao.insert(stories) // Insert new data
+                        }
+
                     }
                 }
             } catch (e: Exception) {
@@ -32,13 +36,10 @@ class StoryRepository(
         }
     }
 
-    // Insert a single story
-    suspend fun insert(story: List<DataModel>) {
-        storyDao.insert(story)
-    }
 
-    // Delete all stories
-    suspend fun deleteAll() {
-        storyDao.deleteAll()
-    }
+
+//    // Delete all stories
+//    suspend fun deleteAll() {
+//        storyDao.deleteAll()
+//    }
 }

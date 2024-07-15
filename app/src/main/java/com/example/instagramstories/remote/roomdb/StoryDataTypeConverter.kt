@@ -7,19 +7,17 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class StoryDataTypeConverter {
-    private val gson = Gson()
-
     @TypeConverter
-    fun fromStoryDataList(storyData: List<Storydata>?): String? {
-        return gson.toJson(storyData)
+    fun fromStorydataList(value: List<Storydata>?): String? {
+        val gson = Gson()
+        val type = object : TypeToken<List<Storydata>>() {}.type
+        return gson.toJson(value, type)
     }
 
     @TypeConverter
-    fun toStoryDataList(data: String?): List<Storydata>? {
-        if (data == null) {
-            return null
-        }
-        val listType = object : TypeToken<List<Storydata>>() {}.type
-        return gson.fromJson(data, listType)
+    fun toStorydataList(value: String?): List<Storydata>? {
+        val gson = Gson()
+        val type = object : TypeToken<List<Storydata>>() {}.type
+        return gson.fromJson(value, type)
     }
 }
