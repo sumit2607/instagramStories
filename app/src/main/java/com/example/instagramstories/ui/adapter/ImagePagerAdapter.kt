@@ -3,8 +3,10 @@ package com.example.instagramstories.ui.adapter
 
 import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.instagramstories.databinding.ItemImageBinding
 import com.example.instagramstories.remote.model.Storydata
 import com.google.android.exoplayer2.MediaItem
@@ -42,26 +44,43 @@ class ImagePagerAdapter(
         fun bind(dataModel: Storydata) {
             releasePlayer() // Release any existing player instance
 
-            val videoUri = Uri.parse(dataModel.story_photo)
             val context = binding.root.context
+            if (dataModel.story_photo.contains("mp4") || dataModel.story_photo.contains("mkv")) {
+                val videoUri = Uri.parse(dataModel.story_photo)
+                binding.playerView.visibility = View.VISIBLE
+                binding.imageView.visibility = View.GONE
 
-            // Create a SimpleExoPlayer instance
-            player = SimpleExoPlayer.Builder(context).build()
+                // Create a SimpleExoPlayer instance
+                player = SimpleExoPlayer.Builder(context).build()
 
-            // Create a MediaItem
-            mediaItem = MediaItem.fromUri(videoUri)
+                // Create a MediaItem
+                mediaItem = MediaItem.fromUri(videoUri)
 
-            // Set media item to player
-            player?.setMediaItem(mediaItem!!)
+                // Set media item to player
+                player?.setMediaItem(mediaItem!!)
 
-            // Set player to player view
-            binding.playerView.player = player
+                // Set player to player view
+                binding.playerView.player = player
 
-            // Prepare the player asynchronously
-            player?.prepare()
-            player?.playWhenReady = true
+                // Prepare the player asynchronously
+                player?.prepare()
+                player?.playWhenReady = true
 
-            currentPlayer = player
+                currentPlayer = player
+            } else {
+                binding.playerView.visibility = View.GONE
+                binding.imageView.visibility = View.VISIBLE
+
+                Glide.with(context)
+                    .load(dataModel.story_photo)
+                    .into(binding.imageView)
+            }
+        }
+
+        fun stopPlayback() {
+            player?.stop()
+            player?.release()
+            player = null
         }
 
         fun releasePlayer() {
@@ -96,8 +115,8 @@ class ImagePagerAdapter(
 
     // Release the current player when the view pager position changes
     fun releaseCurrentPlayer() {
-        currentPlayer?.pause()
         currentPlayer?.release()
         currentPlayer = null
     }
 }
+
