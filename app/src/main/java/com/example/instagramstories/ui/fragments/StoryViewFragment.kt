@@ -1,5 +1,6 @@
 package com.example.instagramstories.ui.fragments
 
+
 import android.R
 import android.animation.ObjectAnimator
 import android.app.Dialog
@@ -15,10 +16,10 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.viewpager2.widget.ViewPager2
 import com.example.instagramstories.databinding.FragmentStoryViewBinding
 import com.example.instagramstories.remote.model.SharedViewModel
 import com.example.instagramstories.ui.adapter.ImagePagerAdapter
-
 
 class StoryViewFragment : DialogFragment() {
 
@@ -28,6 +29,8 @@ class StoryViewFragment : DialogFragment() {
     private var currentImageIndex = 0
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val storyDuration = 5000L // Duration for each image
+
+    private lateinit var imagePagerAdapter: ImagePagerAdapter  // Declare ImagePagerAdapter globally
 
     // Use SharedViewModel instead of StoryViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
@@ -45,7 +48,7 @@ class StoryViewFragment : DialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         ) // Set full screen width and height
-        window?.setBackgroundDrawableResource(android.R.color.white) // Optional: make background transparent
+        window?.setBackgroundDrawableResource(R.color.white) // Optional: make background transparent
     }
 
     override fun onCreateView(
@@ -59,48 +62,68 @@ class StoryViewFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Show loader initially
+        binding.loader.visibility = View.VISIBLE
+
         // Observe story data from SharedViewModel
         sharedViewModel.storyList.observe(viewLifecycleOwner) { storyList ->
-            Log.d("TAG", "onViewCreated: line no 65 " + storyList[2].story_photo)
             storyList?.let {
-                binding.viewPager.adapter = ImagePagerAdapter(it) { position, isForwardClick ->
-                    if (isForwardClick) {
-                        if (position < it.size - 1) {
-                            currentImageIndex = position + 1
+                // Initialize ImagePagerAdapter
+                imagePagerAdapter =
+                    ImagePagerAdapter(it) { position, isForwardClick, isBackWordClick ->
+                        Log.d(
+                            "TAG",
+                            "onViewCreated: Clicked Location isForwardClick $isForwardClick isBackWordClick $isBackWordClick"
+                        )
+
+                        if (isForwardClick) {
+                            if (position < it.size - 1) {
+                                stopCurrentPlayback()
+                                currentImageIndex = position + 1
+                                if (currentImageIndex < imagePagerAdapter.itemCount - 1) {
+                                    currentImageIndex++
+                                    updateViewPager()
+                                    updateProgressBars()
+                                }
+                            }
+                        } else if (isBackWordClick) {
+                            if (position > 0) {
+                                stopCurrentPlayback()
+                                currentImageIndex = position - 1
+                                if (currentImageIndex > 0) {
+                                    currentImageIndex--
+                                    updateViewPager()
+                                    updateProgressBars()
+                                }
+                            }
                         }
-                    } else {
-                        if (position > 0) {
-                            currentImageIndex = position - 1
-                        }
+                        updateViewPager()
+                        updateProgressBars()
                     }
-                    updateViewPager()
-                    updateProgressBars()
-                }
+
+                // Set adapter to ViewPager
+                binding.viewPager.adapter = imagePagerAdapter
+//                binding.viewPager.offscreenPageLimit = 1
+
                 setupProgressBars(it.size)
                 updateViewPager()
                 startAutoAdvance()
+
+                // Hide loader once data is loaded
+                binding.loader.visibility = View.GONE
             } ?: run {
                 Log.d("TAG", "No data available in StoryViewFragment")
             }
         }
 
-        // Handle clicks for left and right tap areas
-        binding.leftTapArea.setOnClickListener {
-            if (currentImageIndex > 0) {
-                currentImageIndex--
-                updateViewPager()
-                updateProgressBars()
-            }
-        }
 
-        binding.rightTapArea.setOnClickListener {
-            if (currentImageIndex < (binding.viewPager.adapter?.itemCount ?: 0) - 1) {
-                currentImageIndex++
-                updateViewPager()
-                updateProgressBars()
-            }
-        }
+
     }
+
+    private fun stopCurrentPlayback() {
+        imagePagerAdapter.releaseCurrentPlayer()
+    }
+
 
     private fun setupProgressBars(count: Int) {
         binding.progressBarLayout.removeAllViews()
@@ -146,6 +169,7 @@ class StoryViewFragment : DialogFragment() {
     private fun startAutoAdvance() {
         handler.postDelayed({
             if (currentImageIndex < (binding.viewPager.adapter?.itemCount ?: 0) - 1) {
+                stopCurrentPlayback()
                 currentImageIndex++
                 updateViewPager()
                 updateProgressBars()
@@ -154,12 +178,26 @@ class StoryViewFragment : DialogFragment() {
         }, storyDuration)
     }
 
+    override fun onPause() {
+        super.onPause()
+        imagePagerAdapter.releaseCurrentPlayer()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+
         handler.removeCallbacksAndMessages(null)
         _binding = null
     }
+
+
 }
+
+
+
+
+
+
 
 
 

@@ -8,13 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.instagramstories.databinding.FragmentStoryListBinding
-import com.example.instagramstories.remote.api.RetrofitClient
-import com.example.instagramstories.remote.api.StoryApi
 import com.example.instagramstories.remote.model.DataModel
 import com.example.instagramstories.remote.model.SharedViewModel
 import com.example.instagramstories.repo.StoryRepository
@@ -50,15 +47,23 @@ class StoryListFragment() : Fragment() {
     }
 
     private fun setupRecyclerview() {
-        val apiInterface = RetrofitClient.getInstance().create(StoryApi::class.java)
 
-        val storyRepository = StoryRepository(apiInterface)
 
-        storyViewModel =
-            ViewModelProvider(
-                this,
-                StoryViewModelFactory(storyRepository)
-            )[StoryViewModel::class.java]
+//        // Initialize the ViewModel using the ViewModelProvider
+//        val viewModelFactory = StoryViewModelFactory(repository!!)
+//        storyViewModel = ViewModelProvider(this, viewModelFactory)[StoryViewModel::class.java]
+//
+//
+//        storyViewModel = ViewModelProvider(this, StoryViewModelFactory(storyRepository))[StoryViewModel::class.java]
+
+
+        // Initialize the repository
+        val repository = context?.let { StoryRepository.getInstance(it) }
+
+        // Initialize the ViewModel using the ViewModelProvider
+        val viewModelFactory = StoryViewModelFactory(repository!!)
+        storyViewModel = ViewModelProvider(this, viewModelFactory)[StoryViewModel::class.java]
+
         storyViewModel.storyData.observe(viewLifecycleOwner) {
             Log.d("TAG", "onCreate: ${it[0].video_url}")
             Log.d("TAG", "onCreatdssde: ${it[0].storydata?.get(0)}")

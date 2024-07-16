@@ -1,30 +1,72 @@
 package com.example.instagramstories.ui.adapter
 
+
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.instagramstories.databinding.ItemImageBinding
 import com.example.instagramstories.remote.model.Storydata
-
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SimpleExoPlayer
 
 class ImagePagerAdapter(
     private val images: List<Storydata>,
-    private val onImageClick: (Int, Boolean) -> Unit // Lambda to handle image clicks with direction
+    private val onImageClick: (Int, Boolean, Boolean) -> Unit
 ) : RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder>() {
+
+    private var currentPlayer: SimpleExoPlayer? = null
 
     inner class ImageViewHolder(val binding: ItemImageBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
+        var player: SimpleExoPlayer? = null
+        private var mediaItem: MediaItem? = null
+
         init {
-            binding.imageView.setOnClickListener { view ->
-                // Determine click position
-                val isForwardClick = view.x > view.width / 2
-                val position = adapterPosition
-                onImageClick(
-                    position,
-                    isForwardClick
-                ) // Invoke the click callback with the current position
+            binding.apply {
+                leftTapArea.setOnClickListener {
+                    val position = adapterPosition
+                    releasePlayer() // Release any existing player instance
+                    onImageClick(position, false, true)
+                }
+
+                rightTapArea.setOnClickListener {
+                    val position = adapterPosition
+                    releasePlayer() // Release any existing player instance
+                    onImageClick(position, true, false)
+                }
             }
+        }
+
+        fun bind(dataModel: Storydata) {
+            releasePlayer() // Release any existing player instance
+
+            val videoUri = Uri.parse(dataModel.story_photo)
+            val context = binding.root.context
+
+            // Create a SimpleExoPlayer instance
+            player = SimpleExoPlayer.Builder(context).build()
+
+            // Create a MediaItem
+            mediaItem = MediaItem.fromUri(videoUri)
+
+            // Set media item to player
+            player?.setMediaItem(mediaItem!!)
+
+            // Set player to player view
+            binding.playerView.player = player
+
+            // Prepare the player asynchronously
+            player?.prepare()
+            player?.playWhenReady = true
+
+            currentPlayer = player
+        }
+
+        fun releasePlayer() {
+            player?.release()
+            player = null
         }
     }
 
@@ -35,24 +77,7 @@ class ImagePagerAdapter(
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val dataModel = images[position]
-//        Glide.with(holder.binding.root.context)
-//            .load(dataModel.image_url)
-//            .into(holder.binding.imageView)
-
-
-        // Set up the video URI
-        val uri: Uri = Uri.parse(dataModel!!.story_photo)
-        holder.binding.imageView.setVideoURI(uri)
-
-        // Start video playback
-        holder.binding.imageView.start()
-
-//        // Optional: Set up listeners for video events (e.g., completion)
-//        holder.binding.imageView.setOnPreparedListener { mediaPlayer ->
-//            mediaPlayer.isLooping = true // Loop the video
-//
-//        }
-        // Set the layout parameters to match parent dimensions
+        holder.bind(dataModel)
         holder.binding.root.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
@@ -60,4 +85,19 @@ class ImagePagerAdapter(
     }
 
     override fun getItemCount(): Int = images.size
+
+    override fun onViewRecycled(holder: ImageViewHolder) {
+        super.onViewRecycled(holder)
+        holder.releasePlayer() // Ensure player resources are released when recycled
+        if (holder.player == currentPlayer) {
+            currentPlayer = null
+        }
+    }
+
+    // Release the current player when the view pager position changes
+    fun releaseCurrentPlayer() {
+        currentPlayer?.pause()
+        currentPlayer?.release()
+        currentPlayer = null
+    }
 }
